@@ -1,169 +1,27 @@
-# webcachesim2
+# LBSC+
 
-## A simulator for CDN caching and web caching policies.
+## Introduction
+LBSC+, a learning-based cost-aware caching framework that jointly optimizes ad-mission and eviction for cloud databases.
 
-Simulate a variety of existing caching policies by replaying request traces, and use this framework as a basis to experiment with new ones. A 14-day long [Wikipedia trace](#traces) is released alongside the simulator.
+we evaluate the performance of LBSC+ on synthetic datasets based on real-world workloads, this part is implemented based on the cache framework webcachesim(https://github.com/sunnyszy/lrb).
 
-The webcachesim2 simulator was built to evaluate the Learning relaxed Belady algorithm (LRB), a new machine-learning-based caching algorithm. The simulator build on top of [webcachesim](https://github.com/dasebe/webcachesim), see [References](#references) for more information.
 
-Currently supported caching algorithms:
-* Learning Relaxed Belady (LRB)
-* LR (linear-regression based ML caching)
-* Belady (heap-based)
-* Belady (a sample-based approximate version)
-* Relaxed Belady
-* Inf (infinite-size cache)
-* LRU
-* B-LRU (Bloom Filter LRU)
-* ThLRU (LRU with threshold admission control)
-* LRUK
-* LFUDA
-* S4LRU
-* ThS4LRU (S4LRU with threshold admission control)
-* FIFO
-* Hyperbolic
-* GDSF
-* GDWheel
-* Adaptive-TinyLFU (via Java library integration)
-* LeCaR
-* UCB
-* LHD
-* AdaptSize
-* Random (random eviction)
-
-Configuration parameters of these algorithms can be found in the config file [config/algorithm_params.yaml](config/algorithm_params.yaml)
-
-The prototype implementation on top of Apache Traffic Server is available [here](https://github.com/sunnyszy/lrb-prototype).
-
-## Traces
-The Wikipedia trace used in the paper: [download link](http://lrb.cs.princeton.edu/wiki2018.tr.tar.gz). To uncompress:
-```shell script
-tar -xzvf wiki2018.tr.tar.gz
+## Dependencies and Build
 ```
-A newer version of Wikipedia trace is also available: [download link](http://lrb.cs.princeton.edu/wiki2019.tr.tar.gz).
+See scripts/install.sh
+```
 
-## Trace Format
-Request traces are expected to be in a space-separated format with 3 columns and additionally columns for extra features.
-- time should be a long long int, but can be arbitrary (for future TTL feature, not currently in use)
-- id should be a long long int, used to uniquely identify objects
-- size should be uint32, this is object's size in bytes
-- extra features are optional uint16 features. LRB currently interprets them as categorical features (e.g., object type).
+## Dataset
+```
+The CDN database can be downloaded from http://lrb.cs.princeton.edu/wiki2018.tr.tar.gz.
+```
 
-| time |  id | size | \[extra_feature(s)\] |
-| ---- | --- | ---- |  ----               |
-|   1  |  1  |  120 |
-|   2  |  2  |   64 |
-|   3  |  1  |  120 |
-|   4  |  3  |  14  |
-|   4  |  1 |  120 |
-
-Simulator will run a sanity check on the trace when starting up.
-
-## Installation
-
-Build and install from source:
-
-```bash
-mkdir -p build
-bash scripts/install.sh
-cd build && make
+## Quick Start
+- Generating cost for the real-world dataset. caching algorithm(LRU) and cache size(4294967296) are arbitrary. The last three parameters are used to adjust whether transfer cost dominates or computation cost dominates.
+```
+webcachesim_cli xxx LRU 4294967296 --delta_ratio=xx --fixed_byte=xx --min_ratio=xx 
 ```
 
 
-
-## Using an existing policy
-
-The basic interface is
-
-    ./build/webcachesim_cli traceFile cacheType cacheSize [--param=value]
-
-where
-
- - traceFile: a request trace (see [trace format](#trace-format))
- - cacheType: one of the caching policies
- - cacheSize: the cache capacity in bytes
- - param, value: optional cache parameter and value, can be used to tune cache policies
- 
- Global parameters
-
-
-| parameter |  type | description |
-| ---- | --- | --- |
-| bloom_filter | 0/1  | use bloom filter as admission control in front of cache algorithm |
-| dburi, dbcollection  | string | upload simulation results to mongodb |
-| is_metadata_in_cache_size  | 0/1 |  deducted metadata overhead from cache size  |
-| n_early_stop  | int | stop simulation after n requests, <0 means no early stop |
- 
-
-### Examples
-
-#### Running single simulation
-
-##### Running LRU on Wiki trace 1TB
-```bash
-./build/webcachesim_cli wiki2018.tr LRU 1099511627776
-
-
-simulating
-
-## intermediate results will be printed on every million of requests
-seq: 1000000
-# current_cache_size/max_cache_size (% full) 
-cache size: 29196098273/1099511627776 (0.0265537)
-# time take to simulate this million of requests
-delta t: ...
-# byte miss ratio for this million of requests
-segment bmr: 0.786717
-# resident set size in byte
-rss: 60399616
-
 ```
-
-##### Running B-LRU on Wiki trace 1TB
-```bash
-./build/webcachesim_cli wiki2018.tr LRU 1099511627776 --bloom_filter=1
-
-```
-
-##### Running LRB on Wiki trace 1TB
-```bash
-./build/webcachesim_cli wiki2018.tr LRB 1099511627776 --memory_window=671088640
-```
-LRB memory window for Wikipedia trace different cache sizes in the paper (based on first 20% validation prefix):
-
-| cache size (GB) |  memory window |
-| ---- | --- | 
-|   64  |  58720256  | 
-|   128  |  100663296  |
-|   256  |  167772160  |
-|   512  |  335544320  |
-|   1024  |  671088640 |
-
-## Automatically tune LRB memory window on a new trace
-[LRB_WINDOW_TUNING.md](LRB_WINDOW_TUNING.md) describes how to tune LRB memory window on a new trace.
-
-## Contributors are welcome
-
-Want to contribute? Great! We follow the [Github contribution work flow](https://help.github.com/articles/github-flow/).
-This means that submissions should fork and use a Github pull requests to get merged into this code base.
-
-### Bug Reports
-
-If you come across a bug in webcachesim, please file a bug report by [creating a new issue](https://github.com/sunnyszy/lrb/issues/new). This is an early-stage project, which depends on your input!
-
-### Contribute a new caching policy
-
-If you want to add a new caching policy, please augment your code with a reference, a test case, and an example. Use pull requests as usual.
-
-## References
-
-We ask academic works, which built on this code, to reference the LRB/AdaptSize papers:
-
-    Learning Relaxed Belady for Content Distribution Network Caching
-    Zhenyu Song, Daniel S. Berger, Kai Li, Wyatt Lloyd
-    USENIX NSDI 2020.
-    
-    AdaptSize: Orchestrating the Hot Object Memory Cache in a CDN
-    Daniel S. Berger, Ramesh K. Sitaraman, Mor Harchol-Balter
-    USENIX NSDI 2017.
 
