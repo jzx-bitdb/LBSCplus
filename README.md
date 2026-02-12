@@ -23,6 +23,5 @@ webcachesim_cli xxx LRU 4294967296 --delta_ratio=xx --fixed_byte=xx --min_ratio=
 ```
 run the following cmd:
 
-webcachesim_cli xxx LBSC 4294967296 
 ```
-
+webcachesim_cli xxx LBSC 4294967296 
