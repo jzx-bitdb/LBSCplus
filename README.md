@@ -19,9 +19,9 @@ The CDN database can be downloaded from http://lrb.cs.princeton.edu/wiki2018.tr.
 ## Quick Start
 - Generating cost for the real-world dataset. caching algorithm(LRU) and cache size(4294967296) are arbitrary. The last three parameters are used to adjust whether transfer cost dominates or computation cost dominates.
 ```
-webcachesim_cli xxx LRU 4294967296 --delta_ratio=xx --fixed_byte=xx --min_ratio=xx 
+webcachesim_cli data_path LRU 4294967296 --delta_ratio=xx --fixed_byte=xx --min_ratio=xx 
 ```
 run the following cmd:
 
 ```
-webcachesim_cli xxx LBSC 4294967296 
+webcachesim_cli data_path LBSCP 4294967296 
