@@ -21,7 +21,8 @@ The CDN database can be downloaded from http://lrb.cs.princeton.edu/wiki2018.tr.
 ```
 webcachesim_cli xxx LRU 4294967296 --delta_ratio=xx --fixed_byte=xx --min_ratio=xx 
 ```
+run the following cmd:
 
-
+webcachesim_cli xxx LBSC 4294967296 
 ```
 
